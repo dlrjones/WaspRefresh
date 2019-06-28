@@ -87,7 +87,7 @@ namespace WaspRefresh
                 sldWaspSourceFile.SaveAs(outFilePath);
             }catch(Exception ex)
             {
-                lm.Write("OutputManager.CreateSpreadsheet() " + ex.Message);
+                lm.Write(entity + "  OutputManager.CreateSpreadsheet() " + ex.Message);
             }
         }
 

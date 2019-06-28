@@ -69,6 +69,7 @@ namespace WaspRefresh
 
         private void GetData()
         {
+            lm.Write(dbConnectString);
             ODMRequest Request = new ODMRequest();
             Request.ConnectString = dbConnectString;
             Request.CommandType = CommandType.Text;
@@ -95,25 +96,20 @@ namespace WaspRefresh
 
         private string BuildQuery()
         {
-            string query = "DECLARE @EndDate DATETIME = (SELECT GETDATE()) " +
-                            "DECLARE @AVG_DAYS float " +
-                            "CREATE TABLE #PO_ACTIVITY (" +
-                            "ITEM_NO varchar (20), " +
-                            "AVG_DAYS_TO_DELV float, " +
-                            "PO_TYPE INT )" +
-                            "INSERT INTO #PO_ACTIVITY " +
+            string query = "WITH PO_ACTIVITY(ITEM_NO, AVG_DAYS_TO_DELV) AS (" +
                             "SELECT I.ITEM_NO, " +
-                            "AVG(CONVERT(float, DATEDIFF(day, PO.PO_DATE, PL.LAST_RCV_DATE))) AVG_DAYS_TO_DELIVERY,PO_TYPE " +
+                            "AVG(CONVERT(float,DATEDIFF(day,PO.PO_DATE,PL.LAST_RCV_DATE))) AVG_DAYS_TO_DELIVERY " +
                             "FROM PO " +
                             "INNER JOIN PO_LINE PL ON PO.PO_ID = PL.PO_ID " +
                             "INNER JOIN ITEM I ON PL.ITEM_ID = I.ITEM_ID " +
                             "INNER JOIN PO_SUB_LINE PSL ON PL.PO_LINE_ID = PSL.PO_LINE_ID " +
                             "INNER JOIN CC ON PSL.CC_ID = CC.CC_ID " +
-                            "WHERE PL.STAT IN(3,10) " +
-                            "AND PO.PO_DATE BETWEEN DATEADD(day, -365, @EndDate) AND DATEADD(ms,-3,DATEADD(day, 1, @EndDate)) " +
-                            "GROUP BY I.ITEM_NO,PO_TYPE " +
+                            "WHERE PL.STAT IN (3,10) " +
+                            "AND LEFT(I.ITEM_NO,2) <> '~[' " +
+                            "AND PO.PO_DATE BETWEEN DATEADD(day,-365,(SELECT GETDATE())) AND DATEADD(ms,-3,DATEADD(day,1,(SELECT GETDATE()))) " +
+                            "GROUP BY I.ITEM_NO ) " +
 
-                "SELECT TOP(100) PERCENT dbo.ITEM.ITEM_ID, dbo.ITEM.ITEM_NO, RTRIM(dbo.REQ.REQ_NO) AS REQ_NO, dbo.REQ_ITEM.LINE_NO, " +
+                "SELECT DISTINCT dbo.ITEM.ITEM_ID, dbo.ITEM.ITEM_NO, RTRIM(dbo.REQ.REQ_NO) AS REQ_NO, dbo.REQ_ITEM.LINE_NO, " +
                     "dbo.ITEM.DESCR, dbo.REQ_ITEM.QTY AS PAR, SUBSTRING(dbo.REQ_ITEM.UM_CD, 7, 2) AS[PAR UM], dbo.ITEM.CTLG_NO, " +
                   "RIGHT(RTRIM(dbo.ITEM_VEND_PKG.UM_CD), 2) + ' ' + CAST(RIGHT(RTRIM(dbo.ITEM_VEND_PKG_FACTOR.TO_QTY), 4) AS VARCHAR) " +
                   " + ' ' + RIGHT(RTRIM(dbo.ITEM_VEND_PKG.TO_UM_CD), 2) AS PKG_STR, " +
@@ -123,9 +119,9 @@ namespace WaspRefresh
                     "END AS[BIN LOC],  " +
                     "CASE " +
                     "WHEN POA.AVG_DAYS_TO_DELV < 1.0 THEN 1.00 " +
-                    "WHEN POA.PO_TYPE = 2 THEN 1.00 " +
                     "ELSE CAST(POA.AVG_DAYS_TO_DELV AS decimal(9,2)) " +
-                    "END AS LEAD_DAYS " +
+                    "END AS LEAD_DAYS, " +
+                    "LOC.LOC_ID " +
 
                   "FROM dbo.REQ INNER JOIN dbo.REQ_ITEM ON dbo.REQ.REQ_ID = dbo.REQ_ITEM.REQ_ID INNER JOIN " +
                 "dbo.ITEM ON dbo.REQ_ITEM.ITEM_ID = dbo.ITEM.ITEM_ID LEFT OUTER JOIN " +
@@ -134,21 +130,21 @@ namespace WaspRefresh
                 "dbo.ITEM_VEND_PKG_FACTOR ON dbo.ITEM_VEND_PKG.ITEM_VEND_ID = dbo.ITEM_VEND_PKG_FACTOR.ITEM_VEND_ID AND " +
                 "dbo.ITEM_VEND_PKG.UM_CD = dbo.ITEM_VEND_PKG_FACTOR.UM_CD AND " +
                 "dbo.ITEM_VEND_PKG.TO_UM_CD = dbo.ITEM_VEND_PKG_FACTOR.TO_UM_CD LEFT OUTER JOIN " +
-                "#PO_ACTIVITY POA on POA.ITEM_NO = ITEM.ITEM_NO JOIN " +
+                "PO_ACTIVITY POA on POA.ITEM_NO COLLATE SQL_Latin1_General_CP1_CI_AS = ITEM.ITEM_NO JOIN " +
                 "SLOC_ITEM_BIN ON SLOC_ITEM_BIN.ITEM_ID = REQ_ITEM.ITEM_ID JOIN " +
                 "LOC ON LOC.LOC_ID = SLOC_ITEM_BIN.LOC_ID " +
 
                 "WHERE(ITEM.STAT IN(1, 2)) AND(ITEM_VEND.SEQ_NO = 1) AND(ITEM_VEND_PKG.SEQ_NO = 1) AND(REQ.REQ_TYPE = 3) AND " +
-                "(REQ.STAT = 13) AND(REQ_ITEM.QTY > 0) AND(ITEM_VEND.CORP_ID = 1000) " +
+                "(REQ.STAT = 13) AND(REQ_ITEM.QTY > 0) " +
+                "AND LOC.INACT_IND = 'N' " +
 
                 "GROUP BY ITEM.ITEM_ID, ITEM.ITEM_NO, REQ.REQ_NO, REQ_ITEM.LINE_NO, ITEM.DESCR, " +
                 "REQ_ITEM.QTY, REQ_ITEM.UM_CD, ITEM.CTLG_NO, ITEM_VEND_PKG.UM_CD,  " +
                 "ITEM_VEND_PKG_FACTOR.TO_QTY, ITEM_VEND_PKG.TO_UM_CD, REQ_ITEM.PAR_BIN_LOC,  " +
-                "POA.AVG_DAYS_TO_DELV, POA.PO_TYPE " +
-                ",LOC.LOC_TYPE,SLOC_ITEM_BIN.BIN_LOC " +
+                "POA.AVG_DAYS_TO_DELV, LOC.LOC_TYPE,SLOC_ITEM_BIN.BIN_LOC, LOC.LOC_ID " +
 
-                "ORDER BY REQ_NO, REQ_ITEM.LINE_NO " +
-                "DROP TABLE #PO_ACTIVITY";
+                "ORDER BY REQ_NO, REQ_ITEM.LINE_NO ";
+
             return query;
         }
        
