@@ -18,7 +18,7 @@ namespace WaspRefresh
         static void Main(string[] args)
         {
             entity = args[0];
-            lm.Write(entity);
+             lm.Write(entity);
             RefreshSpreadsheet();
             SaveSpreadsheet();
         }
@@ -50,7 +50,7 @@ namespace WaspRefresh
             }
             catch (Exception ex)
             {
-                lm.Write("Main.SaveSpreadsheet() " + ex.Message);
+                lm.Write(entity + "Main.SaveSpreadsheet() " + ex.Message);
             }
         }
     }
