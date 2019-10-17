@@ -2,7 +2,7 @@
 
 The password for the data access portion of this app is stored in the file [configFilePath]\HMC [or WUMC] \UserConfig.txt (find configFilePath in the config file).
 The referenced library KeyMaster is used to decrypt the password at run time. There is another app called EncryptAndHash 
-(found in \\Lapis\h_purchasing$\Purchasing\PMM IS data\HEMM Apps\Executables\ ) that you can use to change the password when that becomes necessary. The key is either "intelliweb" [HMC] or  "RIO" [UW].
+(found in \\Lapis\h_purchasing$\Purchasing\PMM IS data\HEMM Apps\Executables\ ) that you can use to change the password when that becomes necessary. The key is either "intelliweb" [HMC] or  "RIO" [UW] & [NWH].
 
 
 

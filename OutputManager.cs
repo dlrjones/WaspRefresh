@@ -42,7 +42,7 @@ namespace WaspRefresh
         public OutputManager()
         {
             ODMDataSetFactory = new ODMDataFactory();
-            ConfigSettings = (NameValueCollection)ConfigurationSettings.GetConfig("appSettings");
+            ConfigSettings = (NameValueCollection)ConfigurationManager.GetSection("appSettings");
             lm.LogFile = ConfigSettings.Get("logFile");
             lm.LogFilePath = ConfigSettings.Get("logFilePath");
             outFilePath = ConfigSettings.Get("xport_path");
@@ -55,10 +55,15 @@ namespace WaspRefresh
                 outFilePath += "HMC";
                 sheetName = "HMCDataSource";
             }
-            else
+            else if (entity.Equals("[u-hemm]"))
             {
                 outFilePath += "UWMC";
                 sheetName = "UWMCDataSource";
+            }
+            else
+            {
+                outFilePath += "NWH";
+                sheetName = "NWHDataSource";
             }
 
             outFilePath += ConfigSettings.Get("out_file_name") + ".xlsx";
