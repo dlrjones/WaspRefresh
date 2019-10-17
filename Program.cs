@@ -17,6 +17,8 @@ namespace WaspRefresh
 
         static void Main(string[] args)
         {
+     //       in app.config, set the xport_path for test or prod
+
             entity = args[0];
              lm.Write(entity);
             RefreshSpreadsheet();
