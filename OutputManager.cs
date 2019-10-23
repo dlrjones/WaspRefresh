@@ -84,7 +84,7 @@ namespace WaspRefresh
                     rowNo++;
                     foreach (object colData in dRow.ItemArray)
                     {
-                        sldWaspSourceFile.SetCellValue(rowNo, colNo++, colData.ToString());
+                        sldWaspSourceFile.SetCellValue(rowNo, colNo++, colData.ToString().Trim());
                         dataColNo++;
                     }
                 }
