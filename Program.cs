@@ -10,17 +10,33 @@ namespace WaspRefresh
 {
     class Program
     {
-        private static string entity = "";   //either [h-hemm] or [u-hemm]
+        private static string entity = "";   //[h-hemm] [u-hemm]  [n-hemm]  [medstores_connect]  [mpous] [h-hemm-dj] [u-hemm-dj] [n-hemm-dj]
         private static DataSet dSet = new DataSet();
         private static string colHdr = "";
         private static LogManager lm = LogManager.GetInstance();
 
         static void Main(string[] args)
         {
-     //       in app.config, set the xport_path for test or prod
-
+     // --->>>   in app.config, set the xport_path for test or prod   
             entity = args[0];
-             lm.Write(entity);
+            if (args.Length > 1)
+            {  //the fact of a second param means it's running door jamb labels
+                //so to set up a Scheduled Task you'd put   [h-hemm] djamb
+                //what you type for the second param doesn't matter just don't put a space in it
+                switch (entity)
+                {
+                    case "[h-hemm]":
+                        entity = "[h-hemm-dj]";
+                        break;
+                    case "[u-hemm]":
+                        entity = "[u-hemm-dj]";
+                        break;
+                    case "[n-hemm]":
+                        entity = "[n-hemm-dj]";
+                        break;
+                }
+            }
+            lm.Write(entity);
             RefreshSpreadsheet();
             SaveSpreadsheet();
         }

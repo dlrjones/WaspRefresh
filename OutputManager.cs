@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Data;
@@ -50,6 +49,7 @@ namespace WaspRefresh
 
         private void CompleteFilePath()
         {
+            string storesPath = "";
             if (entity.Equals("[h-hemm]"))
             {
                 outFilePath += "HMC";
@@ -60,13 +60,45 @@ namespace WaspRefresh
                 outFilePath += "UWMC";
                 sheetName = "UWMCDataSource";
             }
-            else
+            else if (entity.Equals("[n-hemm]"))
             {
                 outFilePath += "NWH";
-                sheetName = "NWHDataSource";
+                sheetName = "NWHDataSource";               
             }
-
-            outFilePath += ConfigSettings.Get("out_file_name") + ".xlsx";
+            if (entity.Equals("[h-hemm-dj]"))
+            {
+                outFilePath += "DoorJambLabels\\HMCDoorJambLabels.xlsx"; // HMCDoorJambLabels
+                sheetName = "HMCDataSource";
+            }
+            else if (entity.Equals("[u-hemm-dj]"))
+            {
+                outFilePath += "DoorJambLabels\\UW-NWHDoorJambLabels.xlsx";
+                sheetName = "UWMCDataSource";
+            }
+            else if (entity.Equals("[n-hemm-dj]"))
+            {
+                outFilePath += "DoorJambLabels\\UW-NWHDoorJambLabels.xlsx";
+                sheetName = "UW-NWHDataSource";
+            }
+            else if (entity.Equals("[mpous]"))
+            {
+                outFilePath += "MPOUS";
+                sheetName = "MPOUSDataSource";
+            }
+            else if(entity.Equals("[medstores_connect]"))
+            {
+                outFilePath += "MedStores";
+                sheetName = "MedStoresDataSource";
+                //the medstores data source doesn't have an underscore.
+                storesPath = ConfigSettings.Get("out_file_name") + ".xlsx";
+                storesPath = storesPath.Substring(1);
+                outFilePath += storesPath;
+            }
+            if (storesPath.Length == 0)
+            {
+                if (!outFilePath.Contains(".xlsx"))
+                    outFilePath += ConfigSettings.Get("out_file_name") + ".xlsx";
+            }
         }
 
         public void CreateSpreadsheet()
