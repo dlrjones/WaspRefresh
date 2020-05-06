@@ -62,6 +62,8 @@ namespace WaspRefresh
                     dbConnectString = ConfigSettings.Get("uwmc_connect");
                 else if (entity.Equals("[n-hemm]"))
                     dbConnectString = ConfigSettings.Get("uwmc_connect");     // old:  Get("nwh_connect");
+                else if (entity.Equals("[n_parforms]"))
+                    dbConnectString = ConfigSettings.Get("uwmc_connect");
                 if (entity.Equals("[h-hemm-dj]"))
                     dbConnectString = ConfigSettings.Get("hmc_connect");
                 else if (entity.Equals("[u-hemm-dj]"))
@@ -94,6 +96,9 @@ namespace WaspRefresh
             {
                 case "[n-hemm]":
                     cmd = BuildNWHQuery();
+                    break;
+                case "[n_parforms]":
+                    cmd = BuildNWHParForms();
                     break;
                 case "[medstores_connect]":
                     cmd = BuildMedStoresQuery();
@@ -213,6 +218,51 @@ namespace WaspRefresh
             return query;
         }
 
+        private string BuildNWHParForms()
+        {
+            string query = "SELECT DISTINCT dbo.ITEM.ITEM_ID, dbo.ITEM.MISC3 AS ITEM_NO, RTRIM(dbo.REQ.REQ_NO) AS [PAR FORM], dbo.REQ_ITEM.LINE_NO, " +
+                    "dbo.ITEM.DESCR, dbo.REQ_ITEM.QTY AS PAR, SUBSTRING(dbo.REQ_ITEM.UM_CD, 7, 2) AS[PAR UM], dbo.ITEM.CTLG_NO,  " +
+                  "(SELECT ISNULL(CAST((SELECT RIGHT(RTRIM(IVPF.UM_CD), 2) FROM dbo.ITEM_VEND_PKG_FACTOR IVPF " +
+                   "JOIN dbo.ITEM_VEND_PKG IVP ON IVPF.ITEM_VEND_ID = IVP.ITEM_VEND_ID " +
+                   "WHERE SEQ_NO IN(1) AND IVP.ITEM_VEND_ID = ITEM_VEND_PKG.ITEM_VEND_ID AND IVP.TO_UM_CD = IVPF.TO_UM_CD " +
+                   "AND IVP.UM_CD = IVPF.UM_CD) AS VARCHAR(4)),'')) +'' + " +
+                   "(SELECT ISNULL(CAST((SELECT RIGHT(RTRIM(IVPF.TO_QTY), 4) FROM dbo.ITEM_VEND_PKG_FACTOR IVPF " +
+                   "JOIN  dbo.ITEM_VEND_PKG IVP  ON IVPF.ITEM_VEND_ID = IVP.ITEM_VEND_ID " +
+                   "WHERE SEQ_NO IN(1) AND IVP.ITEM_VEND_ID = ITEM_VEND_PKG.ITEM_VEND_ID AND IVP.UM_CD <> IVP.TO_UM_CD " +
+                   "AND IVP.TO_UM_CD = IVPF.TO_UM_CD AND IVP.UM_CD = IVPF.UM_CD) AS VARCHAR(4)),'')) +'' + " +
+                   "(SELECT ISNULL(CAST((SELECT RIGHT(RTRIM(IVPF.TO_UM_CD), 2) FROM dbo.ITEM_VEND_PKG_FACTOR IVPF " +
+                   "JOIN  dbo.ITEM_VEND_PKG IVP  ON IVPF.ITEM_VEND_ID = IVP.ITEM_VEND_ID " +
+                   "WHERE SEQ_NO IN(1) AND IVP.ITEM_VEND_ID = ITEM_VEND_PKG.ITEM_VEND_ID AND IVP.UM_CD <> IVP.TO_UM_CD " +
+                   "AND IVP.TO_UM_CD = IVPF.TO_UM_CD AND IVP.UM_CD = IVPF.UM_CD) AS VARCHAR(4)),'')) +'' + " +
+                   "(SELECT ISNULL(CAST((SELECT RIGHT(RTRIM(IVPF.TO_QTY), 4) FROM dbo.ITEM_VEND_PKG_FACTOR IVPF " +
+                   "JOIN  dbo.ITEM_VEND_PKG IVP  ON IVPF.ITEM_VEND_ID = IVP.ITEM_VEND_ID " +
+                   "WHERE SEQ_NO IN(2) AND IVP.ITEM_VEND_ID = ITEM_VEND_PKG.ITEM_VEND_ID AND IVP.UM_CD <> IVP.TO_UM_CD " +
+                   "AND IVP.TO_UM_CD = IVPF.TO_UM_CD AND IVP.UM_CD = IVPF.UM_CD) AS VARCHAR(4)),'')) +'' + " +
+                   "(SELECT ISNULL(CAST((SELECT CAST(RIGHT(RTRIM(IVPF.TO_UM_CD), 2) AS VARCHAR(4)) FROM dbo.ITEM_VEND_PKG_FACTOR IVPF " +
+                   "JOIN  dbo.ITEM_VEND_PKG IVP  ON IVPF.ITEM_VEND_ID = IVP.ITEM_VEND_ID " +
+                   "WHERE SEQ_NO IN(2) AND IVP.ITEM_VEND_ID = ITEM_VEND_PKG.ITEM_VEND_ID AND IVP.UM_CD <> IVP.TO_UM_CD " +
+                   "AND IVP.TO_UM_CD = IVPF.TO_UM_CD AND IVP.UM_CD = IVPF.UM_CD) AS VARCHAR(4)),'')) AS PKG_STR, " +
+
+                  "ISNULL(REQ_ITEM.PAR_BIN_LOC, '') AS[BIN LOC], ' NWH ' AS ENTITY " +
+
+            "FROM dbo.REQ INNER JOIN dbo.REQ_ITEM ON dbo.REQ.REQ_ID = dbo.REQ_ITEM.REQ_ID INNER JOIN " +
+                "dbo.ITEM ON dbo.REQ_ITEM.ITEM_ID = dbo.ITEM.ITEM_ID LEFT OUTER JOIN " +
+                "dbo.ITEM_VEND ON dbo.ITEM.ITEM_ID = dbo.ITEM_VEND.ITEM_ID INNER JOIN " +
+                "dbo.ITEM_VEND_PKG ON dbo.ITEM_VEND.ITEM_VEND_ID = dbo.ITEM_VEND_PKG.ITEM_VEND_ID INNER JOIN " +
+                "dbo.ITEM_VEND_PKG_FACTOR ON dbo.ITEM_VEND_PKG.ITEM_VEND_ID = dbo.ITEM_VEND_PKG_FACTOR.ITEM_VEND_ID AND " +
+                "dbo.ITEM_VEND_PKG.UM_CD = dbo.ITEM_VEND_PKG_FACTOR.UM_CD AND " +
+                "dbo.ITEM_VEND_PKG.TO_UM_CD = dbo.ITEM_VEND_PKG_FACTOR.TO_UM_CD " +
+
+                "WHERE(ITEM.STAT IN(1, 2)) AND(ITEM_VEND.SEQ_NO = 1) AND(ITEM_VEND_PKG.SEQ_NO = 1) AND(REQ.REQ_TYPE = 3) " +
+                "AND(REQ.STAT = 13) AND(REQ_ITEM.QTY > 0) AND(ITEM_VEND.CORP_ID = 1000) AND LEN(MISC3) > 0 " +
+                "AND LEFT(REQ_NO,2) = 'XN' " +
+                "GROUP BY ITEM.ITEM_ID, ITEM.MISC3, REQ.REQ_NO, REQ_ITEM.LINE_NO, ITEM.DESCR,  " +
+                "REQ_ITEM.QTY, REQ_ITEM.UM_CD, ITEM.CTLG_NO, ITEM_VEND_PKG.UM_CD,   " +
+                "ITEM_VEND_PKG_FACTOR.TO_QTY, ITEM_VEND_PKG.TO_UM_CD, REQ_ITEM.PAR_BIN_LOC, ITEM_VEND_PKG.ITEM_VEND_ID " +
+                "ORDER BY[PAR FORM], REQ_ITEM.LINE_NO ";
+            return query;
+        }
+
         private string BuildMPOUSQuery()
         {
             //this script draws from the production db
@@ -244,7 +294,7 @@ namespace WaspRefresh
                     break;
                 case "[u-hemm]":
                     hosp = "UWMC";
-                    break;                
+                    break;                  
             }
             string query =             
                 "SELECT DISTINCT dbo.ITEM.ITEM_ID, dbo.ITEM.ITEM_NO, RTRIM(dbo.REQ.REQ_NO) AS [PAR FORM], dbo.REQ_ITEM.LINE_NO, " +
@@ -270,8 +320,7 @@ namespace WaspRefresh
                    "WHERE SEQ_NO IN(2) AND IVP.ITEM_VEND_ID = ITEM_VEND_PKG.ITEM_VEND_ID AND IVP.UM_CD <> IVP.TO_UM_CD " +
                    "AND IVP.TO_UM_CD = IVPF.TO_UM_CD AND IVP.UM_CD = IVPF.UM_CD) AS VARCHAR(4)),'')) AS PKG_STR, " +
 
-                  "ISNULL(REQ_ITEM.PAR_BIN_LOC, '') AS[BIN LOC], '" + hosp + "' AS ENTITY " +
-        
+                  "ISNULL(REQ_ITEM.PAR_BIN_LOC, '') AS[BIN LOC], '" + hosp + "' AS ENTITY " +        
 
             "FROM dbo.REQ INNER JOIN dbo.REQ_ITEM ON dbo.REQ.REQ_ID = dbo.REQ_ITEM.REQ_ID INNER JOIN " +
                 "dbo.ITEM ON dbo.REQ_ITEM.ITEM_ID = dbo.ITEM.ITEM_ID LEFT OUTER JOIN " +
@@ -294,9 +343,14 @@ namespace WaspRefresh
         }
        
         private string GetUserConfig()
-        {//this completes the path to where the credentials are found. if you need to add to this then start by 
+        {//this completes the path to where the credentials are found. The UserConfig.txt file for the specific entity
+         //contains an encrypted string which is the user name and password. You can see for yourself by launching the 
+         //EncryptAndHash app, and copy the encrypted string into it. The Key (typically the user name) can be found in
+         //the source code source code directory for WaspRefresh
+
+            //if you need to add to this if/else list then start by  
             //running EncryptAndHash.exe and create an encrypted string for the user name and password - as in
-            //user name=rosco; password = rosco's password; [Note: the user name can be found in the ReadMe.txt file in the source code diretory]
+            //user name=rosco; password = [rosco's password]
             //put that encrypted string into a text file and use the if block below as a template for where to 
             //save it.
             string deCipher = "";
@@ -309,7 +363,9 @@ namespace WaspRefresh
                     userConfig += "UWMC\\UserConfig.txt";
                 else if (entity == "[n-hemm]")
                     userConfig += "NWH\\UserConfig.txt";
-                else
+                else if (entity == "[n_parforms]")
+                    userConfig += "NWH\\UserConfig.txt";                    
+                else if (entity == "[medstores_connect]")                    
                     userConfig += "MedStores\\UserConfig.txt";
 
                 string[] key = File.ReadAllLines(userConfig);

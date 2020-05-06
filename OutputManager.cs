@@ -65,6 +65,11 @@ namespace WaspRefresh
                 outFilePath += "NWH";
                 sheetName = "NWHDataSource";               
             }
+            else if (entity.Equals("[n_parforms]"))
+            {
+                outFilePath += "NWHParForms";
+                sheetName = "NWHParFormsDataSource";
+            }            
             if (entity.Equals("[h-hemm-dj]"))
             {
                 outFilePath += "DoorJambLabels\\HMCDoorJambLabels.xlsx"; // HMCDoorJambLabels
