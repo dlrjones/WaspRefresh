@@ -29,7 +29,7 @@ namespace WaspRefresh
                         entity = "[h-hemm-dj]";
                         break;
                     case "[u-hemm]":
-                        entity = "[u-hemm-dj]";
+                        entity = "[u-hemm-dj]";  
                         break;
                     case "[n-hemm]":
                         entity = "[n-hemm-dj]";
