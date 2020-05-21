@@ -158,7 +158,7 @@ namespace WaspRefresh
                            "WHERE ROUTE_NO<> '' " +
                            "ORDER BY ENTITY,BLDG ";
             switch (entity)
-            {//this switch is here to accommodate future door jamb needs.
+            {//for hmc door jambs the query is replaced with this:
                 case "[h-hemm-dj]":
                     query = "SELECT  CASE LEFT(ROUTE_NO,3) WHEN '000' THEN 'HMC' WHEN 100 THEN 'UWMC' WHEN 200 THEN 'HMC' WHEN '300' THEN 'NWH' ELSE '' END AS ENTITY, " +
                             "[NAME] AS[DESCRIPTION],'STP' + REPLACE(ISNULL(ROUTE_NO, ''), '-', '') AS BARCODE, RTRIM(ISNULL(ROUTE_NO, '')) AS ROUTE_NO, " +
@@ -367,6 +367,13 @@ namespace WaspRefresh
                     userConfig += "NWH\\UserConfig.txt";                    
                 else if (entity == "[medstores_connect]")                    
                     userConfig += "MedStores\\UserConfig.txt";
+
+                else if (entity == "[h-hemm-dj]")
+                    userConfig += "HMC\\UserConfig.txt";
+                else if (entity == "[u-hemm-dj]")
+                    userConfig += "UWMC\\UserConfig.txt";
+                else if (entity == "[n-hemm-dj]")
+                    userConfig += "NWH\\UserConfig.txt";
 
                 string[] key = File.ReadAllLines(userConfig);
                 string user = entity == "[h-hemm]" ? "intelliweb" : "RIO"; //RIO for UW, NWH and MedStores
