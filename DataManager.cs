@@ -376,7 +376,7 @@ namespace WaspRefresh
                     userConfig += "NWH\\UserConfig.txt";
 
                 string[] key = File.ReadAllLines(userConfig);
-                string user = entity == "[h-hemm]" ? "intelliweb" : "RIO"; //RIO for UW, NWH and MedStores
+                string user = entity == "[h-hemm]" || entity == "[h-hemm-dj]" ? "intelliweb" : "RIO"; //RIO for UW, NWH and MedStores
                 deCipher = StringCipher.Decrypt(key[0], user);
             }
             catch (Exception ex)
