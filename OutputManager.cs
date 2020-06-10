@@ -90,6 +90,11 @@ namespace WaspRefresh
                 outFilePath += "MPOUS";
                 sheetName = "MPOUSDataSource";
             }
+            else if (entity.Equals("[mpous2]"))
+            {
+                outFilePath += "MPOUS2";
+                sheetName = "MPOUSDataSource";
+            }
             else if(entity.Equals("[medstores_connect]"))
             {
                 outFilePath += "MedStores";

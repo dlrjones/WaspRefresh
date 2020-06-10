@@ -72,9 +72,11 @@ namespace WaspRefresh
                     dbConnectString = ConfigSettings.Get("uwmc_connect");
                 else if (entity.Equals("[mpous]"))
                     dbConnectString = ConfigSettings.Get("mpous_connect");
+                else if (entity.Equals("[mpous2]"))
+                    dbConnectString = ConfigSettings.Get("mpous_connect");
                 else if (entity.Equals("[medstores_connect]"))
                     dbConnectString = ConfigSettings.Get("medstores_connect");
-                if(!entity.Equals("[mpous]"))  //the connect string is complete already for mpous
+                if(!entity.Equals("[mpous]"))  //the connect string is complete already for mpous (TrustedConnection=yes)
                     dbConnectString += GetUserConfig();
             }
             catch(Exception ex)
@@ -103,7 +105,10 @@ namespace WaspRefresh
                 case "[medstores_connect]":
                     cmd = BuildMedStoresQuery();
                     break;
-                case "[mpous]":
+                case "[mpous]":  //the task that calls this is on an MPOUS computer and was created with my admin pw. no one else can see the task
+                    cmd = BuildMPOUSQuery();
+                    break;
+                case "[mpous2]":   //I put this in place to get around the admin pw problem above if someone else can recreate it.
                     cmd = BuildMPOUSQuery();
                     break;
                 case "[nwclinic]":
